@@ -193,7 +193,7 @@ class AqaraOpenAPI:
             "response_type":"code",
             "redirect_uri":"https://www.baidu.com/",
             "account":username,
-            "passwd_md5":passwd_md5,
+            "passwordMD5":passwd_md5,
             "state":0
         }
         resp = requests.post(self.endpoint+PATH_AUTH,data=req_data,headers=headers)
