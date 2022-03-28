@@ -181,9 +181,9 @@ class AqaraOpenAPI:
         self.__schema = schema
         self.token_info = None
 
-        # md5 = hashlib.md5()
-        # md5.update(password.encode('utf-8'))
-        # passwd_md5 = md5.hexdigest().lower()
+        md5 = hashlib.md5()
+        md5.update(password.encode('utf-8'))
+        passwd_md5 = md5.hexdigest().lower()
         # params = {"Content-Type": 'application/x-www-form-urlencoded;charset=utf-8'}
         
 
@@ -193,7 +193,7 @@ class AqaraOpenAPI:
             "response_type":"code",
             "redirect_uri":"https://www.baidu.com/",
             "account":username,
-            "password":password,
+            "passwd_md5":passwd_md5,
             "state":0
         }
         resp = requests.post(self.endpoint+PATH_AUTH,data=req_data,headers=headers)
