@@ -178,6 +178,7 @@ class AqaraOpenAPI:
             "response_type":"code",
             "redirect_uri":"https://www.baidu.com/",
             "account":username,
+            # "password":password,
             "passwordExt":passwd_md5,
             "state":0
         }

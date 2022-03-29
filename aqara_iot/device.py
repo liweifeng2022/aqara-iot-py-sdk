@@ -441,7 +441,7 @@ class AqaraDeviceManager:
         return device
 
     def _make_point_id(self, device_id:str, res_id:str)->str:
-        return self.did + "__" + res_id
+        return device_id + "__" + res_id
 
     def get_point_value(self, did:str, res_id:str)->str:
         point =  self.get_point(self._make_point_id(did, res_id))

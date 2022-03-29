@@ -91,7 +91,7 @@ class AqaraOpenMQ(threading.Thread):
         
         cfg = AqaraMQConfig(self.get_config())
 
-        if len(cfg) == 0 or cfg.host == "":
+        if cfg.host == "":
             return None
         else :
             return cfg
