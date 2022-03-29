@@ -13,7 +13,6 @@ import requests
 from .openlogging import filter_logger, logger
 from .aqara_enums import APPS, AQARA_COUNTRIES, PATH_ACCESS_TOKEN, PATH_AUTH, PATH_OPEN_API
 
-
 AQARA_ERROR_CODE_ACCESSTOKEN_INCORRECT = 2004
 AQARA_ERROR_CODE_ACCESSTOKEN_EXPIRED = 2005
 
@@ -66,19 +65,19 @@ class AqaraOpenAPI:
             if country.country_code == self.__country_code
         ]
         if len (country) > 0:
-            self.endpoint = country[0].endpoint       
+            self.endpoint = country[0].endpoint
 
         # self.access_token = ""
         self.app_id = APPS.get(country[0].name).APP_ID
         self.key_id = APPS.get(country[0].name).KEY_ID
         self.app_key = APPS.get(country[0].name).APP_KEY
         self.lang = 'en'
+
         self.token_info: AqaraTokenInfo = None
         self.__username = ""
         self.__password = ""
         self.__schema = ""
-      
-
+ 
 
     # def login(self, username:str, password:str):
     #     self.__username = username

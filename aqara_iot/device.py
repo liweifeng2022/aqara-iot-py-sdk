@@ -79,10 +79,6 @@ class ValueRange(SimpleNamespace):
     # min_value: str
     # step_scaled : str
 
-
-
-
-
 class AqaraPoint(SimpleNamespace):
     """Aqara Device.
 
@@ -231,23 +227,14 @@ class AqaraDeviceManager:
     specifications, the latest statuses, and sending commands
 
     """
-
-    # def __init__(self, api: AqaraOpenAPI, mq: AqaraOpenMQ) -> None:
     def __init__(self, api: AqaraOpenAPI) -> None:
         """Aqara device manager init."""
         self.api = api
-        # self.mq = mq
-        self.device_manage = AqaraHomeDeviceManage(api)
-
-        # mq.add_message_listener(self.on_message)
-        # self.point_map: dict[str, str ] = {}  #pointid,device_id
+        # self.device_manage = AqaraHomeDeviceManage(api)
         self.device_map: dict[str, AqaraDevice ] = {}
         self.device_listeners = set()
         self.model_resource_info_map : dict[str, list]  = {}
 
-    # def __del__(self):
-    #     """Remove mqtt listener after object del."""
-    #     self.mq.remove_message_listener(self.on_message)
 
     def on_message(self, data: str):
         logger.debug(f"mq receive-> {data}")
@@ -452,6 +439,15 @@ class AqaraDeviceManager:
     def get_device(self, device_id:str)-> AqaraDevice | None :
         device = self.device_map.get(device_id, None)
         return device
+
+    def _make_point_id(self, device_id:str, res_id:str)->str:
+        return self.did + "__" + res_id
+
+    def get_point_value(self, did:str, res_id:str)->str:
+        point =  self.get_point(self._make_point_id(did, res_id))
+        if point is not None:
+            return point.get_value()
+        return ""
     
     def get_point(self, point_id:str)-> AqaraPoint | None :
         ids = point_id.split('__',1)
@@ -476,29 +472,31 @@ class AqaraDeviceManager:
 
  
 
-    def remove_device(self, device_id: str) -> dict[str, Any]:
-        """Remove device.
+    # def remove_device(self, device_id: str) -> dict[str, Any]:
+    #     """Remove device.
 
-        Args:
-          device_id(str): device id
+    #     Args:
+    #       device_id(str): device id
 
-        Returns:
-            response: response body
-        """
-        return self.device_manage.remove_device(device_id)
+    #     Returns:
+    #         response: response body
+    #     """
+    #     return self.device_manage.remove_device(device_id)
 
-    def remove_device_list(self, devIds: list[str]) -> dict[str, Any]:
-        """Remove devices.
+    # def remove_device_list(self, devIds: list[str]) -> dict[str, Any]:
+    #     """Remove devices.
 
-        Args:
-          device_id(list): device id list
+    #     Args:
+    #       device_id(list): device id list
 
-        Returns:
-            response: response body
-        """
-        return self.device_manage.remove_device_list(devIds)
+    #     Returns:
+    #         response: response body
+    #     """
+    #     return self.device_manage.remove_device_list(devIds)
 
     
+  
+
   
 
     def send_commands(
@@ -517,37 +515,6 @@ class AqaraDeviceManager:
         Returns:
             response: response body
         """
-        return self.device_manage.send_commands(device_id, commands)
-
-    ##############################
-
-
-class DeviceManage(metaclass=ABCMeta):
-    api: AqaraOpenAPI
-
-    def __init__(self, api: AqaraOpenAPI):
-        self.api = api
-
-
-
-    @abstractclassmethod
-    def update_device_caches(self, devIds: list[str]):
-        pass
-
-
-    @abstractclassmethod
-    def send_commands(self, device_id: str, commands: list[str]):
-        pass
-
-
-class AqaraHomeDeviceManage(DeviceManage):
-    def update_device_caches(self, devIds: list[str]):
-        pass
-
-    def send_commands(
-        self, device_id: str, commands: dict[str, str]  
-    ) :
-        # commands  :           dict[point_id,value]
         resources :list = []
         for resource_id, value  in commands.items():
             item = {"resourceId":resource_id, "value": value }
@@ -563,4 +530,3 @@ class AqaraHomeDeviceManage(DeviceManage):
         }
 
         self.api.post(PATH_OPEN_API,body)
-

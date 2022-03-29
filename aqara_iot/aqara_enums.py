@@ -3,12 +3,14 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
+
 class AuthType(IntEnum):
     """Aqara Cloud Auth Type."""
     # Aqara账号授权:0、项目授权:1、虚拟账号授权:2
     AQARA_SMART_HOME = 0
     PROJECT = 1
     VIRTUAL = 2
+
 
 
 AQARA_OAUTH2_AUTHORIZE = "/v3.0/open/authorize"
@@ -23,8 +25,8 @@ class AqaraCloudOpenAPIEndpoint:
     #"/v3.0/open/api"
 
     # 中国大陆
-    #CHINA = "https://open-cn.aqara.com"
-    CHINA = "https://developer-test.aqara.com"
+    CHINA = "https://open-cn.aqara.com"
+    # CHINA = "https://developer-test.aqara.com"
 
     # 美国
     AMERICA = "https://open-usa.aqara.com"
@@ -40,9 +42,6 @@ class AqaraCloudOpenAPIEndpoint:
 
 
 
-# PATH_CHINA = "https://open-cn.aqara.com"
-
-#
 PATH_OPEN_API = "/v3.0/open/api"
 PATH_AUTH     = "/v3.0/open/authorize"
 PATH_ACCESS_TOKEN = "/v3.0/open/access_token"
@@ -55,6 +54,8 @@ class AppInfo:
     KEY_ID: str
 
 
+
+
 DEV = AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
 # CN = AppInfo('933393548471640064440ec2','07cps5et7s812bjlxyylffrvjp3vowoe','K.933393548853321728')
 CN =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
@@ -62,7 +63,6 @@ RU =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.9
 EU =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
 US =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
 KR =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
-
 APPS: dict[str,AppInfo] = {'China':CN,'dev':DEV,'Europe':EU,'Russia':RU,'United States':US,'South Korea':KR}
 
 
@@ -78,13 +78,11 @@ class Country:
 
 
 AQARA_COUNTRIES = [
-
     Country("China", "86", AqaraCloudOpenAPIEndpoint.CHINA),
     Country("Europe", "251", AqaraCloudOpenAPIEndpoint.EUROPE),
     Country("South Korea", "850",AqaraCloudOpenAPIEndpoint.COREA),
     Country("Russia", "7", AqaraCloudOpenAPIEndpoint.RUSSIA),
     Country("United States", "1", AqaraCloudOpenAPIEndpoint.AMERICA),
-   
 ]
 
 

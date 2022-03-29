@@ -40,9 +40,9 @@ deviceManager = AqaraDeviceManager(openapi)
 
 homeManager = AqaraHomeManager(openapi, deviceManager)
 homeManager.update_device_cache()
-homeManager.update_location_info()
+# homeManager.update_location_info()
 # homeManager.query_location()
-homeManager.query_scenes()
+# homeManager.query_scenes()
 
 
 

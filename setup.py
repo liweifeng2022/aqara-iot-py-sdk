@@ -43,5 +43,5 @@ setup(
     test_suite="runtests.runtests",
     entry_points={"nose.plugins": []},
     packages=find_packages(),
-    python_requires=">=2.7",
+    python_requires=">=3.7",
 )

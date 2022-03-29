@@ -3,6 +3,8 @@ from __future__ import annotations
 from multiprocessing import set_forkserver_preload
 
 import time
+
+
 import threading
 import time
 from typing import Any, Callable
@@ -86,12 +88,12 @@ class AqaraOpenMQ(threading.Thread):
                 'publishTopic':'control_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238',
             }
             return AqaraMQConfig(cfg)
-
+        
         cfg = AqaraMQConfig(self.get_config())
- 
-        if cfg.host == "":
+
+        if len(cfg) == 0 or cfg.host == "":
             return None
-        else :   
+        else :
             return cfg
 
     def _decode_mq_message(self, b64msg: str, password: str, t: str) -> dict[str, Any]:
