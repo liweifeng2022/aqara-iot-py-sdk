@@ -3,18 +3,10 @@ from __future__ import annotations
 from multiprocessing import set_forkserver_preload
 
 import time
-
-
-import base64
-import json
 import threading
 import time
-import uuid
 from typing import Any, Callable
-# from urllib.parse import urlsplit
 from typing import Optional
-
-from Crypto.Cipher import AES
 from paho.mqtt import client as mqtt
 from .openlogging import logger
 
@@ -94,9 +86,10 @@ class AqaraOpenMQ(threading.Thread):
                 'publishTopic':'control_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238',
             }
             return AqaraMQConfig(cfg)
-        else:  cfg = AqaraMQConfig(self.get_config())
+
+        cfg = AqaraMQConfig(self.get_config())
  
-        if len(cfg) == 0 or cfg.host == "":
+        if cfg.host == "":
             return None
         else :   
             return cfg

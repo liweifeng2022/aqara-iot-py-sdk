@@ -501,8 +501,6 @@ class AqaraDeviceManager:
     
   
 
-  
-
     def send_commands(
         self, device_id: str, commands: list[dict[str, Any]]
     ) -> dict[str, Any]:

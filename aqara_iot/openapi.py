@@ -11,7 +11,7 @@ from typing import Any
 import requests
 
 from .openlogging import filter_logger, logger
-from .aqara_enums import AQARA_COUNTRIES, PATH_ACCESS_TOKEN, PATH_AUTH,  DEFAULT_APP_ID , DEFAULT_APP_KEY ,DEFAULT_KEY_ID, PATH_OPEN_API
+from .aqara_enums import APPS, AQARA_COUNTRIES, PATH_ACCESS_TOKEN, PATH_AUTH, PATH_OPEN_API
 
 
 AQARA_ERROR_CODE_ACCESSTOKEN_INCORRECT = 2004
@@ -60,38 +60,24 @@ class AqaraOpenAPI:
 
         # self.endpoint = endpoint
         self.__country_code = country_code
-        # self.access_token = ""
-        self.app_id = DEFAULT_APP_ID
-        self.key_id = DEFAULT_KEY_ID
-        self.app_key = DEFAULT_APP_KEY
-        self.lang = 'en'
-
-        # resp = {
-        #     "code": 0,
-        #     "message": "Success",
-        #     "msgDetails": "",
-        #     "requestId": "2087.17648.16454122892354201",
-        #     "result": {
-        #         "expiresIn": "2592000",
-        #         "openId": "039837959257933685411465277441",
-        #         "accessToken": "0f63bbcaa5d959e89dedaccb6f05165b",
-        #         "refreshToken": "a82522d02197137c6649d7d1c486ff42"
-        #     }
-        # }
-
-        # self.token_info: AqaraTokenInfo =  AqaraTokenInfo(resp) #None``
-
-        self.token_info: AqaraTokenInfo = None
-        self.__username = ""
-        self.__password = ""
-        self.__schema = ""
         country = [
             country
             for country in AQARA_COUNTRIES
             if country.country_code == self.__country_code
         ]
         if len (country) > 0:
-            self.endpoint = country[0].endpoint        
+            self.endpoint = country[0].endpoint       
+
+        # self.access_token = ""
+        self.app_id = APPS.get(country[0].name).APP_ID
+        self.key_id = APPS.get(country[0].name).KEY_ID
+        self.app_key = APPS.get(country[0].name).APP_KEY
+        self.lang = 'en'
+        self.token_info: AqaraTokenInfo = None
+        self.__username = ""
+        self.__password = ""
+        self.__schema = ""
+      
 
 
     # def login(self, username:str, password:str):
@@ -189,7 +175,7 @@ class AqaraOpenAPI:
 
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         req_data = {
-            "client_id": DEFAULT_APP_ID,
+            "client_id": self.app_id,
             "response_type":"code",
             "redirect_uri":"https://www.baidu.com/",
             "account":username,
@@ -208,8 +194,8 @@ class AqaraOpenAPI:
         auth_code = ack_data.get("result",{}).get("code","")
 
         req_data = {
-            "client_id": DEFAULT_APP_ID,
-            "client_secret":DEFAULT_APP_KEY,
+            "client_id": self.app_id,
+            "client_secret":self.app_key,
             "redirect_uri":"https://www.baidu.com/",
             "grant_type":"authorization_code",
             "code":auth_code,
