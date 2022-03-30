@@ -239,7 +239,7 @@ class AqaraDeviceManager:
     def on_message(self, data: str):
         logger.debug(f"mq receive-> {data}")
         msg = json.loads(data)
-        eventType = msg.get("eventType","")
+        eventType = msg.get("msgType","")
         if eventType == "resource_report":
              self._on_device_report( msg["data"])
        
