@@ -293,8 +293,10 @@ class AqaraDeviceManager:
                 device = self.device_map.get(item["subjectId"], None)
                 if not device:
                     continue
-                point_id = item["subjectId"] + '_' + item['resourceId']
+                point_id = item["subjectId"] + '__' + item['resourceId']
                 point = device.point_map.get(point_id, None)
+                if not point:
+                    continue
                 point.value = item["value"]
                 point.update_time = item["time"]
                 self.__update_device(point)

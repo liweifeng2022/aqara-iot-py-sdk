@@ -25,8 +25,8 @@ class AqaraCloudOpenAPIEndpoint:
     #"/v3.0/open/api"
 
     # 中国大陆
-    CHINA = "https://open-cn.aqara.com"
-    # CHINA = "https://developer-test.aqara.com"
+    #CHINA = "https://open-cn.aqara.com"
+    CHINA = "https://developer-test.aqara.com"
 
     # 美国
     AMERICA = "https://open-usa.aqara.com"
