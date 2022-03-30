@@ -312,8 +312,11 @@ class AqaraDeviceManager:
             points_value = self.__query_resource_value(dev_info.did, [])
             for key in points_value.keys():
                 if key in dev_info.point_map:
-                    # self.point_map[key] = dev_info.did
-                    dev_info.point_map[key].value = points_value.get(key,"")
+                    ## self.point_map[key] = dev_info.did
+                    # self.device_map[dev_info.did].point_map[
+                    #     key
+                    # ].value = points_value.get(key, "")
+                    dev_info.point_map[key].value = points_value.get(key, "")
             
 
         # self.update_device_function_cache()
@@ -387,8 +390,12 @@ class AqaraDeviceManager:
         if self.__get_code(resp) == 0:
             result = resp.get("result", [])
             for item in result:
-                point_id = item["subjectId"] + "_" + item["resourceId"]
+                # point_id = item["subjectId"] + "__" + item["resourceId"]
+                point_id = self._make_point_id(item["subjectId"], item["resourceId"])
                 point_value_map[point_id] = item["value"]
+        
+        # if did == "lumi.4cf8cdf3c733efa":
+        #     print(point_value_map)
 
         return point_value_map
     
@@ -516,9 +523,10 @@ class AqaraDeviceManager:
             response: response body
         """
         resources :list = []
-        for resource_id, value  in commands.items():
-            item = {"resourceId":resource_id, "value": value }
-            resources.append(item)
+        for res  in commands:
+            for key,value in res.items():
+                item = {"resourceId":key, "value": value }
+                resources.append(item)
 
         body = {
             "intent": "write.resource.device",
