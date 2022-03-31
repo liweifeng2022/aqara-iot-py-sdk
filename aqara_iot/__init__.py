@@ -3,7 +3,7 @@ from .home import AqaraHomeManager, AqaraScene
 from .openapi import AqaraOpenAPI, AqaraTokenInfo
 from .openlogging import AQARA_LOGGER
 from .openmq import AqaraOpenMQ
-from .aqara_enums import AuthType, AqaraCloudOpenAPIEndpoint
+from .aqara_enums import AuthType
 from .version import VERSION
 
 __all__ = [
