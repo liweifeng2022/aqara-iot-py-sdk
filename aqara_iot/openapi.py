@@ -176,7 +176,7 @@ class AqaraOpenAPI:
         req_data = {
             "client_id": self.app_id,
             "response_type":"code",
-            "redirect_uri":"https://www.baidu.com/",
+            "redirect_uri":"https://developer.aqara.com/",
             "account":username,
             # "password":password,
             "passwordExt":passwd_md5,
@@ -196,7 +196,7 @@ class AqaraOpenAPI:
         req_data = {
             "client_id": self.app_id,
             "client_secret":self.app_key,
-            "redirect_uri":"https://www.baidu.com/",
+            "redirect_uri":"https://developer.aqara.com/",
             "grant_type":"authorization_code",
             "code":auth_code,
         }

@@ -6,14 +6,8 @@ import time
 from abc import ABCMeta, abstractclassmethod
 from types import SimpleNamespace
 from typing import Any
-# , Literal, Optional
-# from xml.sax.xmlreader import AttributesImpl
-# from turtle import up
-
-
 from .openapi import AqaraOpenAPI
 from .openlogging import logger
-from .openmq import AqaraOpenMQ
 from .aqara_enums import PATH_OPEN_API
 
 
@@ -233,7 +227,9 @@ class AqaraDeviceManager:
         # self.device_manage = AqaraHomeDeviceManage(api)
         self.device_map: dict[str, AqaraDevice ] = {}
         self.device_listeners = set()
+        # please find support models at https://developer.aqara.com/console/equipment-resources 
         self.model_resource_info_map : dict[str, list]  = {}
+
 
 
     def on_message(self, data: str):
