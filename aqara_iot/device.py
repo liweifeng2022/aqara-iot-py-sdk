@@ -101,20 +101,7 @@ class AqaraPoint(SimpleNamespace):
         self.proto_mapping : str  = None   #json 字符串，homeassistant 内部自己解析，并创建映射的点。
         self.position_name : str = ""
         self.position_id :str = ""
-
-        
-    # id: str #id = eg: subject_id + __ + 4.1  //.85                 resource_id
-    # did : str  #device id
-    # name: str
-    # icon: str
-    # update_time: int
-    # resource_id: str
-    # # position_name: str #"默认房间",
-    # # position_id:   str  #  ": "real2.768799734306242560",
-    # # parent_position_id: str # "real1.768799734012641280"
-
-    # value: Any
-
+    
 
 
 
@@ -126,11 +113,11 @@ class AqaraPoint(SimpleNamespace):
         # query AqaraDeviceInfo.state
         return True
     
-    def model(self):
-        return ""
-    
     def get_value(self) -> str:
         return self.value
+
+    def get_res_id(self)->str:
+        return self.resource_id
 
 
 
@@ -151,7 +138,7 @@ class AqaraDevice(SimpleNamespace) :
         timeZone	    String	    时区
     """
 
-    def __init__(self, device_info, point_res_names: list, mgr: AqaraDeviceManager):
+    def __init__(self, device_info): #, point_res_names: list, mgr: AqaraDeviceManager
         self.did = device_info["did"]
         self.position_id = device_info["positionId"]
         self.time_zone = device_info["timeZone"]
@@ -162,6 +149,9 @@ class AqaraDevice(SimpleNamespace) :
         self.create_time = int(device_info["createTime"])
         self.point_map: dict[str, AqaraPoint] = {}
         self.position_name : str = ""
+
+
+    def generage__points(self, point_res_names: list, mgr: AqaraDeviceManager):
 
         # res_names = mgr.__query_resource_name([self.did])
         mode_resource_info = mgr.model_resource_info_map.get(self.model,{})
@@ -289,9 +279,9 @@ class AqaraDeviceManager:
                 device = self.device_map.get(item["subjectId"], None)
                 if not device:
                     continue
-                point_id = item["subjectId"] + '__' + item['resourceId']
+                point_id = self._make_point_id(item["subjectId"], item["resourceId"])
                 point = device.point_map.get(point_id, None)
-                if not point:
+                if point is None:
                     continue
                 point.value = item["value"]
                 point.update_time = item["time"]
@@ -342,22 +332,56 @@ class AqaraDeviceManager:
         }        
 
         def __result_handler(data):
+            did_list:list[str] = []
+        
             for item in data:
                 model = item["model"]                     
                 if model not in self.model_resource_info_map:
                     res_info = self.__query_resource_info(model)
                     self.model_resource_info_map[model] = res_info
                 
-                did = item["did"]   
-                res_names = self.__query_resource_name([did])
-                device_list[did] = AqaraDevice(item, res_names, self)   
+                did_list.append(item["did"])
+                device_list[item["did"]] = AqaraDevice(item)  #, point_res_names, self
+                # did = item["did"] 
+               
+            # 一次性查询多个设备的资源名。大概是50个设备，每个设备会有多个资源名上报。
+            res_result = self.__query_resource_name(list(set(did_list)))
+
+            #分类资源名,按设备id 分类
+            res_dict = {} 
+            for res in res_result: 
+                did = res.get("subjectId",None)               
+                if did is not None:
+                    if res_dict.get(did, None) is not None:
+                        res_dict[did].append(res)
+                    else:
+                        res_dict[did] = [res]
+
+            #给设备创建点，
+            for did, point_res_names in res_dict.items():  
+                device = device_list.get(did,None)
+                if device is not None:
+                    device.generage__points(point_res_names, self)      
         
         device_list : dict[str, AqaraDevice] = {}
         self.api.query_all_page(body, __result_handler)
         return device_list
 
 
-    def __query_resource_name(self,subject_ids: list) -> list:         
+    def __query_resource_name(self,subject_ids: list) -> list:  
+        """return 
+            {"code": 0,
+            "message": "Success",
+            "msgDetails": null,
+            "requestId": "",
+            "result": [
+                {
+                "resourceId": "4.1.85",
+                "name": "plug status",
+                "subjectId": "virtual2.55266893697941"
+                }
+            ]}
+        """       
         body = {
             "intent": "query.resource.name",
             "data": {
@@ -388,7 +412,6 @@ class AqaraDeviceManager:
         if self.__get_code(resp) == 0:
             result = resp.get("result", [])
             for item in result:
-                # point_id = item["subjectId"] + "__" + item["resourceId"]
                 point_id = self._make_point_id(item["subjectId"], item["resourceId"])
                 point_value_map[point_id] = item["value"]
         

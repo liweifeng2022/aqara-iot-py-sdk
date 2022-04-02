@@ -2,6 +2,8 @@
 from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
+
+from aqara_iot.aqara_enums import PATH_OPEN_API
 from .device import AqaraDeviceManager
 from .openapi import AqaraOpenAPI
 # from .openmq import AqaraOpenMQ
@@ -83,7 +85,7 @@ class AqaraHomeManager:
                 "sceneId": scene_id
             }
         }
-        return self.api.post(f"config.scene.run",body)
+        return self.api.post(PATH_OPEN_API,body)
 
    
     def _query_location_info(self, parent_position_id:str, query_sub_location:bool) -> dict[str,str] : 
