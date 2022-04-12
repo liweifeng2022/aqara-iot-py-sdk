@@ -279,7 +279,7 @@ class AqaraDeviceManager:
                 device = self.device_map.get(item["subjectId"], None)
                 if not device:
                     continue
-                point_id = self.make_point_id(item["subjectId"], item["resourceId"])
+                point_id = self._make_point_id(item["subjectId"], item["resourceId"])
                 point = device.point_map.get(point_id, None)
                 if point is None:
                     continue
@@ -300,6 +300,10 @@ class AqaraDeviceManager:
             points_value = self.__query_resource_value(dev_info.did, [])
             for key in points_value.keys():
                 if key in dev_info.point_map:
+                    ## self.point_map[key] = dev_info.did
+                    # self.device_map[dev_info.did].point_map[
+                    #     key
+                    # ].value = points_value.get(key, "")
                     dev_info.point_map[key].value = points_value.get(key, "")
             
 
@@ -405,7 +409,7 @@ class AqaraDeviceManager:
         if self.__get_code(resp) == 0:
             result = resp.get("result", [])
             for item in result:
-                point_id = self.make_point_id(item["subjectId"], item["resourceId"])
+                point_id = self._make_point_id(item["subjectId"], item["resourceId"])
                 point_value_map[point_id] = item["value"]
         
         # if did == "lumi.4cf8cdf3c733efa":
@@ -461,11 +465,11 @@ class AqaraDeviceManager:
         device = self.device_map.get(device_id, None)
         return device
 
-    def make_point_id(self, device_id:str, res_id:str)->str:
+    def _make_point_id(self, device_id:str, res_id:str)->str:
         return device_id + "__" + res_id
 
     def get_point_value(self, did:str, res_id:str)->str:
-        point =  self.get_point(self.make_point_id(did, res_id))
+        point =  self.get_point(self._make_point_id(did, res_id))
         if point is not None:
             return point.get_value()
         return ""

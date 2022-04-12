@@ -294,7 +294,7 @@ class AqaraOpenAPI:
                 )
             else :
                 logger.error(
-                    f"Response error: code={response.status_code}, request:{body}"
+                    f"Response error: code={response.status_code}"
                 )
             return None
 
