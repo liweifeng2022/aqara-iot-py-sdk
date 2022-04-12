@@ -22,7 +22,6 @@ from .openlogging import logger
 # CONNECT_FAILED_NOT_AUTHORISED = 5
 
 
-
 class AqaraMQConfig:
     """Aqara mqtt config."""
 
@@ -56,9 +55,10 @@ class AqaraOpenMQ(threading.Thread):
     aqara_mq.set_get_config(device_manager.config_mqtt_add)
     aqara_mq.add_message_listener(device_manager.on_message)
     aqara_mq.start()
-      
+
     """
-    def __init__(self, is_debug = False) -> None:
+
+    def __init__(self, is_debug=False) -> None:
         """Init AqaraOpenMQ."""
         threading.Thread.__init__(self)
         self._stop_event = threading.Event()
@@ -73,27 +73,27 @@ class AqaraOpenMQ(threading.Thread):
         """set the callback func which will be used to get mqtt config"""
         self.get_config = get_config
 
-    def _get_mqtt_config(self) -> Optional[AqaraMQConfig]:       
+    def _get_mqtt_config(self) -> Optional[AqaraMQConfig]:
         if self.get_config is None:
             return None
 
         if self.is_debug:
-            cfg = { #debug cfg
-                'password':'kKHsf4qA3sasN2OrDJDJR2lH',
-                'clientId':'omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238',
-                'subscribeTopic':'receive_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238',
-                'mqttHost':'aiot-mqtt-test.aqara.cn',
-                'userName':'948959825666478080da1ead',
-                'mqttPort':'1883',
-                'publishTopic':'control_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238',
+            cfg = {  # debug cfg
+                "password": "kKHsf4qA3sasN2OrDJDJR2lH",
+                "clientId": "omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238",
+                "subscribeTopic": "receive_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238",
+                "mqttHost": "aiot-mqtt-test.aqara.cn",
+                "userName": "948959825666478080da1ead",
+                "mqttPort": "1883",
+                "publishTopic": "control_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238",
             }
             return AqaraMQConfig(cfg)
-        
+
         cfg = AqaraMQConfig(self.get_config())
 
         if cfg.host == "":
             return None
-        else :
+        else:
             return cfg
 
     def _decode_mq_message(self, b64msg: str, password: str, t: str) -> dict[str, Any]:
@@ -104,10 +104,9 @@ class AqaraOpenMQ(threading.Thread):
         # padding_bytes = msg[-1]
         # msg = msg[:-padding_bytes]
         # return json.loads(msg)
-  
 
     def _on_disconnect(self, client, userdata, rc):
-    # def _on_disconnect(self, client, userdata):        
+        # def _on_disconnect(self, client, userdata):
         if self.client is not None and self.need_reconnect:
             # 每次断开都会更改 client 和 use name password，重连需要重新设置
             mq_config = self._get_mqtt_config()
@@ -120,7 +119,7 @@ class AqaraOpenMQ(threading.Thread):
     def _on_connect(self, mqttc: mqtt.Client, user_data: Any, flags, rc):
         logger.debug(f"connect flags->{flags}, rc->{rc}")
         if rc == 0:
-            mqttc.subscribe(user_data["mqConfig"].subscribe_topic)   
+            mqttc.subscribe(user_data["mqConfig"].subscribe_topic)
 
     def _on_message(self, mqttc: mqtt.Client, user_data: Any, msg: mqtt.MQTTMessage):
         logger.debug(f"payload-> {msg.payload}")
@@ -134,7 +133,7 @@ class AqaraOpenMQ(threading.Thread):
         #              "subjectId":"virtual.93083750786711",
         #              "statusCode":0}
         #              ],
-                    
+
         #  "msgId":"AC10C8A4001E18B4AAC20E41363B00371",
         #  "msgType":"resource_report",
         #  "openId":"853851328861948953623941439489",
@@ -142,7 +141,7 @@ class AqaraOpenMQ(threading.Thread):
         #  }
 
         data = msg.payload.decode("utf8")
-        #decode data
+        # decode data
 
         for listener in self.message_listeners:
             listener(data)
@@ -161,14 +160,14 @@ class AqaraOpenMQ(threading.Thread):
             # reconnect every 2 hours required.
             if self.mq_config is not None:
                 time.sleep(self.mq_config.expire_time - 60)
-            else :
+            else:
                 time.sleep(7200)
 
     def __run_mqtt(self):
         mq_config = self._get_mqtt_config()
-        if mq_config is None :
+        if mq_config is None:
             logger.error("error while get mqtt config")
-            time.sleep(60*5) 
+            time.sleep(60 * 5)
             return
 
         self.mq_config = mq_config
@@ -179,7 +178,7 @@ class AqaraOpenMQ(threading.Thread):
             self.need_reconnect = False
             self.client.disconnect()
 
-        mqttc = self._start(mq_config)            
+        mqttc = self._start(mq_config)
         self.client = mqttc
         self.need_reconnect = True
 
@@ -232,8 +231,3 @@ class AqaraOpenMQ(threading.Thread):
     def remove_message_listener(self, listener: Callable[[str], None]):
         """Remvoe mqtt message listener."""
         self.message_listeners.discard(listener)
-
-
-
-
-

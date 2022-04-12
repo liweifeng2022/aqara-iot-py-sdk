@@ -19,4 +19,6 @@ openapi = AqaraOpenAPI("86")
 # openapi.connect("13723489545", "Faj19880718","CHINA","")
 openapi.get_auth("13723489545", "Faj19880718","")
 
+DISCOVERY_INTEGRATIONS = ("dhcp", "ssdp", "usb", "zeroconf")
 
+print(*DISCOVERY_INTEGRATIONS)
