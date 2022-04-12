@@ -62,7 +62,7 @@ class AEScryptor():
         self.m_data = MData(characterSet=self.characterSet)
 
     def set_key(self,key):
-        self.key = bytes(key, encoding='UTF-8')
+        self.key = key
         self.aes = AES.new(self.key,self.mode) 
 
     def __strip_zero_padding(self,data):
