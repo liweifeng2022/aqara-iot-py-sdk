@@ -1,102 +1,25 @@
 """Aqara Open IOT HUB which base on MQTT."""
 from __future__ import annotations
-# from multiprocessing import set_forkserver_preload
+from multiprocessing import set_forkserver_preload
 
 import time
+
+
 import threading
 import time
 from typing import Any, Callable
 from typing import Optional
 from paho.mqtt import client as mqtt
 from .openlogging import logger
-from Crypto.Cipher import AES
-import base64
 
 
-# 数据类
-class MData():
-    def __init__(self, data = b"",characterSet='utf-8'):
-        # data肯定为bytes
-        self.data = data
-        self.characterSet = characterSet
+# import sys,os
+# sys.path.append(os.getcwd())
+# from .device import AqaraDeviceManager
+# from .openapi import  AqaraOpenAPI
 
-    def from_string(self,data):
-        self.data = data.encode(self.characterSet)
-        return self.data
-
-    def from_base64(self,data):
-        self.data = base64.b64decode(data.encode(self.characterSet))
-        return self.data
-
-    def to_string(self):
-        return self.data.decode(self.characterSet)
-
-    def to_base64(self):
-        return base64.b64encode(self.data).decode()
-
-    def __str__(self):
-        try:
-            return self.toString()
-        except Exception:
-            return self.toBase64()
-
-
-### 封装类
-class AEScryptor():
-    def __init__(self,key,mode,iv = '',paddingMode= "NoPadding",characterSet ="utf-8"):
-        '''
-        构建一个AES对象
-        key: 秘钥，字节型数据
-        mode: 使用模式，只提供两种，AES.MODE_CBC, AES.MODE_ECB
-        iv： iv偏移量，字节型数据
-        paddingMode: 填充模式，默认为NoPadding, 可选NoPadding，ZeroPadding，PKCS5Padding，PKCS7Padding
-        characterSet: 字符集编码
-        '''
-        self.key = key
-        self.mode = mode
-        self.iv = iv
-        self.characterSet = characterSet
-        self.paddingMode = paddingMode
-        self.data = ""
-        self.aes = AES.new(self.key,self.mode) 
-        self.m_data = MData(characterSet=self.characterSet)
-
-    def set_key(self,key):
-        self.key = key
-        self.aes = AES.new(self.key,self.mode) 
-
-    def __strip_zero_padding(self,data):
-        data = data[:-1]
-        while len(data) % 16 != 0:
-            data = data.rstrip(b'\x00')
-            if data[-1] != b"\x00":
-                break
-        return data
-
-    def __strip_pkcs5_7padding(self,data):
-        paddingSize = data[-1]
-        return data.rstrip(paddingSize.to_bytes(1,'little'))
-
-    def __strip_padding_data(self,data):
-        if self.paddingMode == "NoPadding":
-            return self.__strip_zero_padding(data)
-        elif self.paddingMode == "ZeroPadding":
-            return self.__strip_zero_padding(data)
-
-        elif self.paddingMode == "PKCS5Padding" or self.paddingMode == "PKCS7Padding":
-            return self.__strip_pkcs5_7padding(data)
-        else:
-            print("不支持Padding")
- 
-
-    def decrypt_from_bytes(self,entext)->str:
-        '''
-        从二进制进行AES解密
-        entext: 数据类型bytes
-        '''
-        data = self.aes.decrypt(entext)
-        self.m_data.data = self.__strip_padding_data(data)
-        return self.m_data.to_string()
+# LINK_ID = f"aqara-iot-app-sdk-python.{uuid.uuid1()}"
+# CONNECT_FAILED_NOT_AUTHORISED = 5
 
 
 class AqaraMQConfig:
@@ -145,8 +68,6 @@ class AqaraOpenMQ(threading.Thread):
         self.message_listeners = set()
         self.get_config = None
         self.is_debug = is_debug
-        key = b"qam5QPjtFEklN9igQqTQh8Of"  #key will update, when _get_mqtt_config() called.
-        self.aes  = AEScryptor(key,AES.MODE_ECB,iv=b"0000000000000000",paddingMode= "PKCS5Padding",characterSet='utf-8')
 
     def set_get_config(self, get_config: Callable[[str], None]):
         """set the callback func which will be used to get mqtt config"""
@@ -173,8 +94,16 @@ class AqaraOpenMQ(threading.Thread):
         if cfg.host == "":
             return None
         else:
-            self.aes.set_key(cfg.password)
             return cfg
+
+    def _decode_mq_message(self, b64msg: str, password: str, t: str) -> dict[str, Any]:
+        print(b64msg)
+        # key = password[8:24]
+        # cipher = AES.new(key.encode("utf8"), AES.MODE_ECB)
+        # msg = cipher.decrypt(base64.b64decode(b64msg))
+        # padding_bytes = msg[-1]
+        # msg = msg[:-padding_bytes]
+        # return json.loads(msg)
 
     def _on_disconnect(self, client, userdata, rc):
         # def _on_disconnect(self, client, userdata):
@@ -211,8 +140,9 @@ class AqaraOpenMQ(threading.Thread):
         #  "time":"1646303154747"
         #  }
 
-        # data = msg.payload.decode("utf8")
-        data = self.aes.decrypt_from_bytes(msg.payload)         # decode data
+        data = msg.payload.decode("utf8")
+        # decode data
+
         for listener in self.message_listeners:
             listener(data)
 
