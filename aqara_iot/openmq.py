@@ -156,18 +156,6 @@ class AqaraOpenMQ(threading.Thread):
         if self.get_config is None:
             return None
 
-        if self.is_debug:
-            cfg = {  # debug cfg
-                "password": "kKHsf4qA3sasN2OrDJDJR2lH",
-                "clientId": "omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238",
-                "subscribeTopic": "receive_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238",
-                "mqttHost": "aiot-mqtt-test.aqara.cn",
-                "userName": "948959825666478080da1ead",
-                "mqttPort": "1883",
-                "publishTopic": "control_omqt.dcd32f47-8116-4ef6-a8b4-36b46a7f7238",
-            }
-            return AqaraMQConfig(cfg)
-
         cfg = AqaraMQConfig(self.get_config())
 
         if cfg.host == "":
@@ -177,15 +165,19 @@ class AqaraOpenMQ(threading.Thread):
             return cfg
 
     def _on_disconnect(self, client, userdata, rc):
-        # def _on_disconnect(self, client, userdata):
+        logger.debug("disconnect called")        
         if self.client is not None and self.need_reconnect:
             # 每次断开都会更改 client 和 use name password，重连需要重新设置
-            mq_config = self._get_mqtt_config()
-            self.client._client_id = mq_config.client_id
-            self.client.username_pw_set(mq_config.username, mq_config.password)
-            self.client.user_data_set({"mqConfig": mq_config})
+            try:
+                mq_config = self._get_mqtt_config()
+                if mq_config is not None:
+                    self.client._client_id = mq_config.client_id
+                    self.client.username_pw_set(mq_config.username, mq_config.password)
+                    self.client.user_data_set({"mqConfig": mq_config})
+            except:
+                logger.error("_on_disconnect error.")
+            
 
-        logger.debug("disconnect")
 
     def _on_connect(self, mqttc: mqtt.Client, user_data: Any, flags, rc):
         logger.debug(f"connect flags->{flags}, rc->{rc}")
@@ -231,7 +223,7 @@ class AqaraOpenMQ(threading.Thread):
             if self.mq_config is not None:
                 time.sleep(self.mq_config.expire_time - 60)
             else:
-                time.sleep(7200)
+                time.sleep(60)
 
     def __run_mqtt(self):
         mq_config = self._get_mqtt_config()

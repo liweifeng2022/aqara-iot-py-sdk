@@ -509,5 +509,7 @@ class AqaraDeviceManager:
             "intent": "write.resource.device",
             "data": [{"subjectId": device_id, "resources": resources}],
         }
-
-        self.api.post(PATH_OPEN_API, body)
+        try:
+            self.api.post(PATH_OPEN_API, body)
+        except:
+            logger.error("self.api.post(PATH_OPEN_API, body) err")

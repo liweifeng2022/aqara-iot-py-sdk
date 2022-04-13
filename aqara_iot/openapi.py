@@ -356,7 +356,11 @@ class AqaraOpenAPI:
         Returns:
             response: response body
         """
-        return self.__request("POST", path, None, body)
+        try:
+            return self.__request("POST", path, None, body)
+        except:
+            logger.error("post error")
+            return {}
 
     def put(self, path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
         """Http Put.
