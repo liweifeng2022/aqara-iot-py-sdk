@@ -203,8 +203,8 @@ class AqaraOpenMQ(threading.Thread):
         #  "time":"1646303154747"
         #  }
 
-        # data = msg.payload.decode("utf8")
-        data = self.aes.decrypt_from_bytes(msg.payload)         # decode data
+        data = msg.payload.decode("utf8")
+        # data = self.aes.decrypt_from_bytes(msg.payload)         # decode data
         for listener in self.message_listeners:
             listener(data)
 
@@ -216,20 +216,33 @@ class AqaraOpenMQ(threading.Thread):
 
     def run(self):
         """Method representing the thread's activity which should not be used directly."""
-        while not self._stop_event.is_set():
-            self.__run_mqtt()
+       
+        self.__run_mqtt()
 
-            # reconnect every 2 hours required.
-            if self.mq_config is not None:
-                time.sleep(self.mq_config.expire_time - 60)
-            else:
-                time.sleep(60)
+        time.sleep(30)
 
+        while 1==1:
+                try:
+                    if self.client is None:
+                        time.sleep(60)
+                        if self.client is None:
+                          self.__run_mqtt()
+                          continue
+
+                    if self.client._thread._is_stopped:
+                        self.client.loop_stop
+                        time.sleep(20)
+                        self.__run_mqtt()
+                    else:
+                        time.sleep(20)
+                except Exception :
+                        time.sleep(60)
+           
     def __run_mqtt(self):
         mq_config = self._get_mqtt_config()
         if mq_config is None:
             logger.error("error while get mqtt config")
-            time.sleep(60 * 5)
+            time.sleep(60)
             return
 
         self.mq_config = mq_config
