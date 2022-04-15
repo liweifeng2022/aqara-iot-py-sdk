@@ -63,9 +63,11 @@ class AqaraOpenAPI:
         country_code: str = "",  # endpoint: str,
     ) -> None:
         """Init AqaraOpenAPI."""
-        self.session = requests.session()
-
         # self.endpoint = endpoint
+        self.session = requests.Session()
+        self.session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=10, pool_maxsize=50, max_retries=3))
+        self.session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=10, pool_maxsize=50, max_retries=3))
+    
         self.__country_code = country_code
         country = [
             country
@@ -201,7 +203,8 @@ class AqaraOpenAPI:
             "passwordExt": passwd_md5,
             "state": 0,
         }
-        resp = requests.post(self.endpoint + PATH_AUTH, data=req_data, headers=headers)
+    
+        resp = self.session.post(self.endpoint + PATH_AUTH, data=req_data, headers=headers)
         print(resp.text)
         if resp.ok is False:
             return False
@@ -219,18 +222,23 @@ class AqaraOpenAPI:
             "grant_type": "authorization_code",
             "code": auth_code,
         }
-        resp = requests.post(
+
+        resp = self.session.post(
             self.endpoint + PATH_ACCESS_TOKEN, data=req_data, headers=headers
         )
         if resp.ok is False:
             return False
+        
 
         ack_data = resp.json()
         if ack_data.get("access_token", "") != "":
             self.token_info = AqaraTokenInfo(resp.json())
+            resp.close
             return True
 
+        resp.close
         return False
+        
         # {'access_token': '6df0a7753ff1c4fb30b19607f28af7ff', 'refresh_token': '487934062f14cb16ba25353392d3bbf4', 'openId': '039837959257933685411465277441', 'state': 'aiot', 'token_type': 'bearer', 'expires_in': 604800}
 
     def is_connect(self) -> bool:
@@ -301,7 +309,7 @@ class AqaraOpenAPI:
         #         t = {t}"
         # )
 
-        response = self.session.request(
+        response =  self.session.request(
             method, self.endpoint + path, params=params, json=body, headers=headers
         )
 
@@ -327,7 +335,6 @@ class AqaraOpenAPI:
             self.connect(
                 self.__username, self.__password, self.__country_code, self.__schema
             )
-
         return result
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -389,133 +396,3 @@ class AqaraOpenAPI:
             response: response body
         """
         return self.__request("DELETE", path, params, None)
-
-        # def __get_auth_code(self, account: str, passwd: str) -> str:
-
-    #     body = {
-    #         "intent": "config.auth.getAuthCode",
-    #         "data": {
-    #             "account": account,
-    #             "accountType": int(AuthType.AQARA_SMART_HOME),
-    #             "accessTokenValidity": "30d"
-    #         }
-    #     }
-
-    # https://aiot-test.aqara.com/authorize/code
-    # body请求
-    # {
-    # "account":"aiot-test@aqara.com",
-    # "password":"dbd42b98a786f766e266c9be5c5c632b",
-    # "clientId":"708154756567610986989e59",
-    # "responseType":"code",
-    # "redirectUri":"https://www.baidu.com/",
-    # "state":7
-    # }
-
-    # resp = self.post(PATH_OPEN_API, body)
-    # print(resp)
-    # if self.__get_code(resp) == 0:
-    #     result = resp.get("result", {})
-    #     auth_code = result.get("authCode","")
-    #     return auth_code
-    # return ""
-    # {
-    #     "code": 0,
-    #     "requestId": "",
-    #     "message": "Success",
-    #     "msgDetails": null,
-    #     "result": {
-    #         "authCode": "xxxx"
-    #     }
-    # }
-
-
-# def connect(
-#     self,
-#     username: str = "",
-#     password: str = "",
-#     country_code: str = "",
-#     schema: str = "",
-# ) -> dict[str, Any]:
-#     """Connect to Aqara Cloud.
-#     Args:
-#         username (str): user name in to C
-#         password (str): user password in to C
-#         country_code (str): country code in SMART_HOME
-#         schema (str): app schema in SMART_HOME
-
-#     Returns:
-#         response: connect response
-#     """
-#     self.__username = username
-#     self.__password = password
-#     self.__country_code = country_code
-#     self.__schema = schema
-
-
-#     # 名称	类型	是否必须	描述
-#     # client_id	String	是	第三方应用ID，对应系统的AppID
-#     # response_type	String	是	返回类型，按照OAuth 2.0 标准，固定取值为code
-#     # redirect_uri	String	是	第三方应用注册的重定向URI，即第三方自定义的跳转URL
-#     # state	String	否	取值为任意字符串，认证服务器将原样返回该参数
-#     # theme	String	否	页面主题，目前支持0、1两套主题，默认为主题0
-#     self.token_info = None
-
-#     param = {
-#         "client_id": DEFAULT_APP_ID,
-#         "response_type":"code",
-#         "redirect_uri":"https://www.baidu.com/",
-#         "account":username,
-#         "password":password,
-#         "state":0
-#     }
-#     resp = self.__request("POST", PATH_AUTH, param, {})
-#     if self.__get_code(resp) != 0:
-#         return resp
-
-#     auth_code = resp.get("result",{}).get("code","")
-
-#     auth_code = "384573"#self.__get_auth_code(username)
-#     # auth_code = self.__get_auth_code(username,password)
-
-#     body = {
-#         "intent": "config.auth.getToken",
-#         "data": {
-#             "authCode": auth_code,
-#             "account": username,
-#             "accountType": int(AuthType.AQARA_SMART_HOME)
-#         }
-#     }
-#     resp = self.post(PATH_OPEN_API,body)
-
-#     #返回错误码，0：成功，其他错误码请参考错误码说明
-#     if self.__get_code(resp) != 0:
-#         return resp
-
-#     # Cache token info.
-#     self.token_info = AqaraTokenInfo(resp)
-#     print(self.token_info)
-#     return resp
-
-
-# AqaraTokenInfo
-# def __init__(self, token_response: dict[str, Any] = None):
-#     {
-#   "code": 0,
-#   "requestId": "",
-#   "message": "Success",
-#   "msgDetails": null,
-#   "result": {
-#     "expiresIn": "86400",
-#     "openId": "5936527939xxxxxxxxxxxxxx",
-#     "accessToken": "b8001e1893f5e4316a4f8c3b47df3720",
-#     "refreshToken": "ddd9dc7e9ec7b772e852121ed2fe75aa"
-#   }
-# }
-#     """Init AqaraTokenInfo."""
-#     result = token_response.get("result", {})
-#     self.expire_time = int(result.get("expiresIn", 0)) + int(time.time())
-#     self.access_token = result.get("accessToken", "")
-#     self.refresh_token = result.get("refreshToken", "")
-#     self.uid = result.get("openId", "")
-#     # self.platform_url = result.get("platform_url", "")
