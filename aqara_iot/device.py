@@ -10,6 +10,7 @@ from typing import Any
 from .openapi import AqaraOpenAPI
 from .openlogging import logger
 from .aqara_enums import PATH_OPEN_API
+import asyncio
 
 
 class ValueConvertExpression(SimpleNamespace):
@@ -291,14 +292,16 @@ class AqaraDeviceManager:
     def generate_devices_and_update_value(self):
         """Update devices's point present_value."""
         self.device_map = self.__generage_devices()
+        self._quasync_query_values()
 
+
+    async def _quasync_query_values(self):
         for dev_info in self.device_map.values():
             points_value = self.__query_resource_value(dev_info.did, [])
             for key in points_value.keys():
                 if key in dev_info.point_map:
                     dev_info.point_map[key].value = points_value.get(key, "")
-
-        # self.update_device_function_cache()
+        
 
     def __generage_devices(self) -> dict[str, AqaraDevice]:
         """generate devices."""

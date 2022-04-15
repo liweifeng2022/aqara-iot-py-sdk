@@ -129,7 +129,7 @@ class AqaraOpenAPI:
             ]
 
         header = "".join(head_data).lower()
-        logger.debug(f"time:{t},header:{header}")
+        # logger.debug(f"time:{t},header:{header}")
         md5 = hashlib.md5()
         md5.update(header.encode("utf-8"))
         md5_str = md5.hexdigest()
@@ -283,7 +283,7 @@ class AqaraOpenAPI:
         }
         if self.token_info is not None and self.token_info.access_token != "":
             headers["Accesstoken"] = self.token_info.access_token
-        logger.debug(f"sign:{sign}")
+        # logger.debug(f"sign:{sign}")
 
         # Accesstoken String	否	通过授权获取的访问Token
         # Appid	String	        是	第三方应用的Appid
@@ -293,13 +293,13 @@ class AqaraOpenAPI:
         # Sign	String	        是	请求签名
         # Lang	Enum	        否	语言，默认英文，'zh', 'en'
 
-        logger.debug(
-            f"Request: method = {method}, \
-                url = {self.endpoint + path},\
-                params = {params},\
-                body = {filter_logger(body)},\
-                t = {t}"
-        )
+        # logger.debug(
+        #     f"Request: method = {method}, \
+        #         url = {self.endpoint + path},\
+        #         params = {params},\
+        #         body = {filter_logger(body)},\
+        #         t = {t}"
+        # )
 
         response = self.session.request(
             method, self.endpoint + path, params=params, json=body, headers=headers
@@ -318,9 +318,9 @@ class AqaraOpenAPI:
 
         result = response.json()
 
-        logger.debug(
-            f"Response: {json.dumps(filter_logger(result), ensure_ascii=False, indent=2)}"
-        )
+        # logger.debug(
+        #     f"Response: {json.dumps(filter_logger(result), ensure_ascii=False, indent=2)}"
+        # )
 
         if result.get("code", -1) == AQARA_ERROR_CODE_ACCESSTOKEN_INCORRECT:
             self.token_info = None
