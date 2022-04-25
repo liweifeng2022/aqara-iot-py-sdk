@@ -10,7 +10,7 @@ from typing import Any
 from .openapi import AqaraOpenAPI
 from .openlogging import logger
 from .aqara_enums import PATH_OPEN_API
-import asyncio
+# import asyncio
 
 
 class ValueConvertExpression(SimpleNamespace):
@@ -157,14 +157,14 @@ class AqaraDevice(SimpleNamespace):
         # res_names = mgr.__query_resource_name([self.did])
         mode_resource_info = mgr.model_resource_info_map.get(self.model, {})
         for item in mode_resource_info:
-            resource_id = item["resourceId"]
-            id = self.did + "__" + resource_id
+            resource_id = item["resourceId"]            
             names = [
                 name_item["name"]
                 for name_item in point_res_names
                 if name_item["resourceId"] == resource_id
             ]
             res_name = names[0] if len(names) > 0 else ""
+            id = self.did + "__" + resource_id            
             self.point_map[id] = AqaraPoint(
                 self.did, id, resource_id, res_name, "", int(time.time())
             )
@@ -292,15 +292,22 @@ class AqaraDeviceManager:
     def generate_devices_and_update_value(self):
         """Update devices's point present_value."""
         self.device_map = self.__generage_devices()
-        self._quasync_query_values()
+        # #self._quasync_query_values()
+        points_value = self.__query_resource_value_list(list(self.device_map.keys()))   
+        for key in points_value.keys():
+            point = self.get_point(key)
+            if point is None:
+                continue
+            point.value = points_value.get(key, "")
 
 
-    async def _quasync_query_values(self):
-        for dev_info in self.device_map.values():
-            points_value = self.__query_resource_value(dev_info.did, [])
-            for key in points_value.keys():
-                if key in dev_info.point_map:
-                    dev_info.point_map[key].value = points_value.get(key, "")
+    # async def __async_query_values(self):
+    #     """ async query resource value"""
+    #     for dev_info in self.device_map.values():
+    #         points_value = self.__query_resource_value(dev_info.did, [])
+    #         for key in points_value.keys():
+    #             if key in dev_info.point_map:
+    #                 dev_info.point_map[key].value = points_value.get(key, "")
         
 
     def __generage_devices(self) -> dict[str, AqaraDevice]:
@@ -320,20 +327,21 @@ class AqaraDeviceManager:
         }
 
         def __result_handler(data):
-            did_list: list[str] = []
-
+            did_set = set()
             for item in data:
                 model = item["model"]
-                if model not in self.model_resource_info_map:
-                    res_info = self.__query_resource_info(model)
-                    self.model_resource_info_map[model] = res_info
 
-                did_list.append(item["did"])
-                device_list[item["did"]] = AqaraDevice(item)  # , point_res_names, self
-                # did = item["did"]
+                # 过滤两个查询有问题的设备
+                if model == "virtual.ir.fan" or model.find("aqara.speaker.") >= 0:
+                    continue
+
+                #查询 model 对应的资源信息。如果不存在就设置，存在就跳过。
+                self.model_resource_info_map.setdefault(model, self.__query_resource_info(model))
+                did_set.add(item["did"])
+                device_dict.setdefault(item["did"], AqaraDevice(item))
 
             # 一次性查询多个设备的资源名。大概是50个设备，每个设备会有多个资源名上报。
-            res_result = self.__query_resource_name(list(set(did_list)))
+            res_result = self.__query_resource_name(list(did_set))
 
             # 分类资源名,按设备id 分类
             res_dict = {}
@@ -342,15 +350,15 @@ class AqaraDeviceManager:
                 if did is not None:
                     res_dict.setdefault(did, []).append(res)
 
-            # 给设备创建点，
+            # 给设备创建点
             for did, point_res_names in res_dict.items():
-                device = device_list.get(did, None)
+                device = device_dict.get(did, None)
                 if device is not None:
                     device.generage__points(point_res_names, self)
 
-        device_list: dict[str, AqaraDevice] = {}
+        device_dict: dict[str, AqaraDevice] = {}
         self.api.query_all_page(body, __result_handler)
-        return device_list
+        return device_dict
 
     def __query_resource_name(self, subject_ids: list) -> list:
         """return
@@ -390,8 +398,47 @@ class AqaraDeviceManager:
                 point_id = self.make_point_id(item["subjectId"], item["resourceId"])
                 point_value_map[point_id] = item["value"]
 
-        # if did == "lumi.4cf8cdf3c733efa":
-        #     print(point_value_map)
+        return point_value_map
+
+
+    def __query_resource_value_list(self, did_list: list) -> dict[str, str]:
+        body = {
+            "intent": "query.resource.value",
+            "data": {"resources": []}, #"resources": [ {"subjectId": did, "resourceIds": resource_ids}]
+        }        
+
+        def __set_query_did(ids):
+            body["data"]["resources"].clear()
+            for did in ids:                
+                body["data"]["resources"].append({"subjectId": did, "resourceIds": []})
+
+        def __update_device_point_value(resp) -> bool:
+            if self.__get_code(resp) == 0:
+                result = resp.get("result", [])
+                if len(result) > 0:
+                    for item in result:
+                        point_id = self.make_point_id(item["subjectId"], item["resourceId"])
+                        point_value_map[point_id] = item["value"]
+                    return True
+            return False
+
+        def __query_device_one_by_one(ids):
+            for did in ids: 
+                __set_query_did(dids=[did])
+                resp = self.api.post(PATH_OPEN_API, body)  
+                if not __update_device_point_value(resp):
+                    logger.error(f"error: req={body}, model={self.get_device_model(did)},resp={resp}")        
+
+        point_value_map: dict[str, str] = {}
+        #把 did 分割成 40 个一组,批量查询，提高效率
+        group_ids = [did_list[i:i+40] for i in range(0,len(did_list),40)]
+        for ids in group_ids:
+            __set_query_did(ids=ids)
+            resp = self.api.post(PATH_OPEN_API, body)    
+            if resp is None:
+                __query_device_one_by_one(ids = ids)
+            else :
+                __update_device_point_value(resp)
 
         return point_value_map
 
