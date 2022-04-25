@@ -10,7 +10,7 @@ from typing import Any
 from .openapi import AqaraOpenAPI
 from .openlogging import logger
 from .aqara_enums import PATH_OPEN_API
-# import asyncio
+import asyncio
 
 
 class ValueConvertExpression(SimpleNamespace):

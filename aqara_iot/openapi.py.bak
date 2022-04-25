@@ -205,7 +205,7 @@ class AqaraOpenAPI:
         }
     
         resp = self.session.post(self.endpoint + PATH_AUTH, data=req_data, headers=headers)
-        # print(resp.text)
+        print(resp.text)
         if resp.ok is False:
             return False
 
