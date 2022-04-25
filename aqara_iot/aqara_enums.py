@@ -60,14 +60,13 @@ DEV = AppInfo(
     "gchwjfo48nd0da9d3nlne8iblxorbyzl",
     "K.948907589003026432",
 )
-# CN = AppInfo(
-#     "941380790062239744112522",
-#     "tqvq2ol7va9v8u2w518qxedqxvx0e46i",
-#     "K.941380790108377088",
-# )
-# CN = AppInfo('933393548471640064440ec2','07cps5et7s812bjlxyylffrvjp3vowoe','K.933393548853321728')
+CN = AppInfo(
+    "941380790062239744112522",
+    "tqvq2ol7va9v8u2w518qxedqxvx0e46i",
+    "K.941380790108377088",
+)
 #测试环境
-CN =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
+#CN =  AppInfo('948907588893974528e53aac','gchwjfo48nd0da9d3nlne8iblxorbyzl','K.948907589003026432')
 RU = AppInfo(
     "948907588893974528e53aac",
     "gchwjfo48nd0da9d3nlne8iblxorbyzl",
