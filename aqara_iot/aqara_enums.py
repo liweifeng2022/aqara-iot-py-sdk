@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
-
 class AuthType(IntEnum):
     """Aqara Cloud Auth Type."""
 
@@ -60,6 +59,8 @@ DEV = AppInfo(
     "gchwjfo48nd0da9d3nlne8iblxorbyzl",
     "K.948907589003026432",
 )
+
+#正式环境
 CN = AppInfo(
     "941380790062239744112522",
     "tqvq2ol7va9v8u2w518qxedqxvx0e46i",
