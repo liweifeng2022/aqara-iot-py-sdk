@@ -424,7 +424,7 @@ class AqaraDeviceManager:
 
         def __query_device_one_by_one(ids):
             for did in ids: 
-                __set_query_did(dids=[did])
+                __set_query_did(ids=[did])
                 resp = self.api.post(PATH_OPEN_API, body)  
                 if not __update_device_point_value(resp):
                     logger.error(f"error: req={body}, model={self.get_device_model(did)},resp={resp}")        
