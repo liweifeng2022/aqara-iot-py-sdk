@@ -94,7 +94,8 @@ class AEScryptor():
         从二进制进行AES解密
         entext: 数据类型bytes
         '''
-        data = self.aes.decrypt(entext)
+        rawdata = base64.b64decode(entext) 
+        data = self.aes.decrypt(rawdata)
         self.m_data.data = self.__strip_padding_data(data)
         return self.m_data.to_string()
 
@@ -202,9 +203,13 @@ class AqaraOpenMQ(threading.Thread):
         #  "openId":"853851328861948953623941439489",
         #  "time":"1646303154747"
         #  }
+		#data = msg.payload.decode("utf8")
+        data:str = ""        
+        try :
+            data = self.aes.decrypt_from_bytes(msg.payload)         # decode 
+        except:
+            data = msg.payload.decode("utf8")
 
-        data = msg.payload.decode("utf8")
-        # data = self.aes.decrypt_from_bytes(msg.payload)         # decode data
         for listener in self.message_listeners:
             listener(data)
 
