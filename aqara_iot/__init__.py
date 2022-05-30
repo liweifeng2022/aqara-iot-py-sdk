@@ -1,4 +1,4 @@
-from .device import AqaraPoint, AqaraDevice, AqaraDeviceListener, AqaraDeviceManager
+from .device import AqaraPoint, AqaraDevice, AqaraDeviceListener, AqaraDeviceManager,ValueRange
 from .home import AqaraHomeManager, AqaraScene
 from .openapi import AqaraOpenAPI, AqaraTokenInfo
 from .openlogging import AQARA_LOGGER

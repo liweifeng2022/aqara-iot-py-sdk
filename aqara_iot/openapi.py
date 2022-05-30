@@ -365,7 +365,7 @@ class AqaraOpenAPI:
         """
         try:
             return self.__request("POST", path, None, body)
-        except:
+        except Exception:
             logger.error("post error")
             return {}
 
