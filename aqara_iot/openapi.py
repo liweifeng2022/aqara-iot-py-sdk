@@ -190,7 +190,7 @@ class AqaraOpenAPI:
 
         md5 = hashlib.md5()
         md5.update(password.encode("utf-8"))
-        passwd_md5 = md5.hexdigest().lower()
+        passwd_md5 = md5.hexdigest() #.lower()
         # params = {"Content-Type": 'application/x-www-form-urlencoded;charset=utf-8'}
 
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -332,8 +332,8 @@ class AqaraOpenAPI:
 
         if result.get("code", -1) == AQARA_ERROR_CODE_ACCESSTOKEN_INCORRECT:
             self.token_info = None
-            self.connect(
-                self.__username, self.__password, self.__country_code, self.__schema
+            self.get_auth(
+                self.__username, self.__password,  self.__schema
             )
         return result
 
