@@ -1,7 +1,5 @@
 """Aqara Open IOT HUB which base on MQTT."""
 from __future__ import annotations
-# from multiprocessing import set_forkserver_preload
-
 import time
 import threading
 import time
@@ -105,15 +103,6 @@ class AqaraMQConfig:
 
     def __init__(self, cfg: dict[str, str] = {}) -> None:
         """Init AqaraMQConfig."""
-        #  {
-        #     "password": "BG2FRrJTIGCaHTP4Ga2Mlfrr",
-        #     "clientId": "omqt.9617f124-a3e3-45fb-8cc5-64c2017b99d5",
-        #     "subscribeTopic": "receive_omqt.9617f124-a3e3-45fb-8cc5-64c2017b99d5",
-        #     "mqttHost": "aiot-mqtt-test.aqara.cn",
-        #     "userName": "9478646628902215681ddba4",
-        #     "mqttPort": "1883",
-        #     "publishTopic": "control_omqt.9617f124-a3e3-45fb-8cc5-64c2017b99d5"
-        # }
 
         self.password = cfg.get("password", "")
         self.client_id = cfg.get("clientId", "")
@@ -188,22 +177,6 @@ class AqaraOpenMQ(threading.Thread):
     def _on_message(self, mqttc: mqtt.Client, user_data: Any, msg: mqtt.MQTTMessage):
         logger.debug(f"payload-> {msg.payload}")
 
-        # {
-        #     "data":[
-        #             {   "resourceId":"14.7.111",
-        #                 "time":"1646303154714",
-        #              "triggerSource":{"time":"1646303154","type":4},
-        #              "value":"1",
-        #              "subjectId":"virtual.93083750786711",
-        #              "statusCode":0}
-        #              ],
-
-        #  "msgId":"AC10C8A4001E18B4AAC20E41363B00371",
-        #  "msgType":"resource_report",
-        #  "openId":"853851328861948953623941439489",
-        #  "time":"1646303154747"
-        #  }
-		#data = msg.payload.decode("utf8")
         data:str = ""        
         try :
             data = self.aes.decrypt_from_bytes(msg.payload)         # decode 
@@ -269,17 +242,8 @@ class AqaraOpenMQ(threading.Thread):
         mqttc.on_connect = self._on_connect
         mqttc.on_message = self._on_message
         mqttc.on_subscribe = self._on_subscribe
-        # mqttc.on_log = self._on_log
         mqttc.on_disconnect = self._on_disconnect
-
-        # url = urlsplit(mq_config.url)
-        # if url.scheme == "ssl":
-        #     mqttc.tls_set()
-
-        # mqttc.tls_set()
-
         mqttc.connect(mq_config.host, mq_config.port)
-
         mqttc.loop_start()
         return mqttc
 

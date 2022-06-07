@@ -1,7 +1,6 @@
 """Aqara device api."""
 from __future__ import annotations
 
-# import resource
 import json
 import time
 from abc import ABCMeta, abstractclassmethod
@@ -10,8 +9,6 @@ from typing import Any
 from .openapi import AqaraOpenAPI
 from .openlogging import logger
 from .aqara_enums import PATH_OPEN_API
-# import asyncio
-
 
 class ValueConvertExpression(SimpleNamespace):
     """Aqara point value convert function.
@@ -72,12 +69,6 @@ class ValueRange(SimpleNamespace):
         self.step_scaled = step_scaled
 
     values: str
-    # type: str
-    # max_value: str
-    # min_value: str
-    # step_scaled : str
-
-
 class AqaraPoint(SimpleNamespace):
     """Aqara Device.
 
@@ -103,8 +94,8 @@ class AqaraPoint(SimpleNamespace):
         self.value: Any = "0"
         self.expression: ValueConvertExpression = None
         self.value_range: ValueRange = None
-        self.hass_component: str = None  # 通过这个知道是哪种组件。 需要。
-        self.proto_mapping: str = None  # json 字符串，homeassistant 内部自己解析，并创建映射的点。
+        self.hass_component: str = None
+        self.proto_mapping: str = None
         self.position_name: str = ""
         self.position_id: str = ""
 
@@ -169,16 +160,7 @@ class AqaraDevice(SimpleNamespace):
                 self.did, id, resource_id, res_name, "", int(time.time())
             )
 
-    # position_id: str #"real2.730432352746111072",
-    # create_time: int
-    # time_zone: str #"gmt+09:00",
-    # model: str #"lumi.gateway.aqhm01",
-    # state: int #1,
-    # firmware_version: str  #"3.2.6",
-    # device_name: str #"aqara hub",
-    # did: str  #"lumi.07737309957642"
-    # point_map: dict[str, AqaraPoint] = {}
-    # point_resource_ids : list[str]
+
 
 
 class AqaraDeviceListener(metaclass=ABCMeta):
@@ -223,7 +205,6 @@ class AqaraDeviceManager:
     def __init__(self, api: AqaraOpenAPI) -> None:
         """Aqara device manager init."""
         self.api = api
-        # self.device_manage = AqaraHomeDeviceManage(api)
         self.device_map: dict[str, AqaraDevice] = {}
         self.device_listeners = set()
         # please find support models at https://developer.aqara.com/console/equipment-resources
@@ -300,16 +281,6 @@ class AqaraDeviceManager:
                 continue
             point.value = points_value.get(key, "")
 
-
-    # async def __async_query_values(self):
-    #     """ async query resource value"""
-    #     for dev_info in self.device_map.values():
-    #         points_value = self.__query_resource_value(dev_info.did, [])
-    #         for key in points_value.keys():
-    #             if key in dev_info.point_map:
-    #                 dev_info.point_map[key].value = points_value.get(key, "")
-        
-
     def __generage_devices(self) -> dict[str, AqaraDevice]:
         """generate devices."""
         return self.__query_all_device_info()
@@ -384,21 +355,6 @@ class AqaraDeviceManager:
             return []
 
         return resp.get("result")
-
-    def __query_resource_value(self, did: str, resource_ids: list) -> dict[str, str]:
-        body = {
-            "intent": "query.resource.value",
-            "data": {"resources": [{"subjectId": did, "resourceIds": resource_ids}]},
-        }
-        resp = self.api.post(PATH_OPEN_API, body)
-        point_value_map: dict[str, str] = {}
-        if self.__get_code(resp) == 0:
-            result = resp.get("result", [])
-            for item in result:
-                point_id = self.make_point_id(item["subjectId"], item["resourceId"])
-                point_value_map[point_id] = item["value"]
-
-        return point_value_map
 
 
     def __query_resource_value_list(self, did_list: list) -> dict[str, str]:

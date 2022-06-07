@@ -7,8 +7,6 @@ from aqara_iot.aqara_enums import PATH_OPEN_API
 from .device import AqaraDeviceManager
 from .openapi import AqaraOpenAPI
 
-# from .openmq import AqaraOpenMQ
-
 
 class AqaraScene(SimpleNamespace):
     """Aqara Scene.
@@ -69,13 +67,6 @@ class AqaraHomeManager:
         self.location_map = self._query_location_info("", True)
         for device in self.device_manager.device_map.values():
             device.position_name = self.location_map.get(device.position_id, "")
-
-    # def get_location_name(self, position_id:str) -> str :
-    #     if self.location_map.get(position_id) is None:
-    #         sub_local_map = self._query_location_info(position_id, query_sub_location = False)
-    #         self.location_map.update(sub_local_map)
-
-    #     return self.location_map.get(position_id, "")
 
     def trigger_scene(self, position_id: str, scene_id: str) -> dict[str, Any]:
         """Trigger home scene"""

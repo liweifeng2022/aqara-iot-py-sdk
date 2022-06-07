@@ -2,16 +2,13 @@
 from __future__ import annotations
 
 import hashlib
-
-# import hmac
-import json
 import time
 import random
 from typing import Any
 
 import requests
 
-from .openlogging import filter_logger, logger
+from .openlogging import  logger
 from .aqara_enums import (
     APPS,
     AQARA_COUNTRIES,
@@ -68,19 +65,18 @@ class AqaraOpenAPI:
         self.session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=10, pool_maxsize=50, max_retries=3))
         self.session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=10, pool_maxsize=50, max_retries=3))
     
-        self.__country_code = country_code
         country = [
             country
             for country in AQARA_COUNTRIES
-            if country.country_code == self.__country_code
+            if country.country_code == country_code
         ]
         if len(country) > 0:
             self.endpoint = country[0].endpoint
 
         # self.access_token = ""
-        self.app_id = APPS.get(country[0].name).APP_ID
-        self.key_id = APPS.get(country[0].name).KEY_ID
-        self.app_key = APPS.get(country[0].name).APP_KEY
+        self.app_id = APPS.get(country_code).APP_ID
+        self.key_id = APPS.get(country_code).KEY_ID
+        self.app_key = APPS.get(country_code).APP_KEY
         self.lang = "en"
 
         self.token_info: AqaraTokenInfo = None
@@ -88,9 +84,6 @@ class AqaraOpenAPI:
         self.__password = ""
         self.__schema = ""
 
-    # def login(self, username:str, password:str):
-    #     self.__username = username
-    #     self.__password = password
 
     def __nonce(self, length=16) -> str:
         """Generate pseudorandom number."""
@@ -131,7 +124,6 @@ class AqaraOpenAPI:
             ]
 
         header = "".join(head_data).lower()
-        # logger.debug(f"time:{t},header:{header}")
         md5 = hashlib.md5()
         md5.update(header.encode("utf-8"))
         md5_str = md5.hexdigest()
@@ -190,8 +182,7 @@ class AqaraOpenAPI:
 
         md5 = hashlib.md5()
         md5.update(password.encode("utf-8"))
-        passwd_md5 = md5.hexdigest() #.lower()
-        # params = {"Content-Type": 'application/x-www-form-urlencoded;charset=utf-8'}
+        passwd_md5 = md5.hexdigest()
 
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         req_data = {
@@ -199,13 +190,12 @@ class AqaraOpenAPI:
             "response_type": "code",
             "redirect_uri": "https://developer.aqara.com/",
             "account": username,
-            # "password":password,
             "passwordExt": passwd_md5,
             "state": 0,
         }
-    
+
         resp = self.session.post(self.endpoint + PATH_AUTH, data=req_data, headers=headers)
-        # print(resp.text)
+    
         if resp.ok is False:
             return False
 
@@ -239,15 +229,12 @@ class AqaraOpenAPI:
         resp.close
         return False
         
-        # {'access_token': '6df0a7753ff1c4fb30b19607f28af7ff', 'refresh_token': '487934062f14cb16ba25353392d3bbf4', 'openId': '039837959257933685411465277441', 'state': 'aiot', 'token_type': 'bearer', 'expires_in': 604800}
-
     def is_connect(self) -> bool:
         """Is connect to aqara cloud."""
         return self.token_info is not None and len(self.token_info.access_token) > 0
 
     def query_all_page(self, body, callback):
         has_next = True
-        # device_list : dict[str, AqaraDevice] = {}
         count: int = 0
 
         while has_next:
@@ -326,9 +313,6 @@ class AqaraOpenAPI:
 
         result = response.json()
 
-        # logger.debug(
-        #     f"Response: {json.dumps(filter_logger(result), ensure_ascii=False, indent=2)}"
-        # )
 
         if result.get("code", -1) == AQARA_ERROR_CODE_ACCESSTOKEN_INCORRECT:
             self.token_info = None
