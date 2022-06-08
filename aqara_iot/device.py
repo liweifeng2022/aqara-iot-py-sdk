@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import time
-from abc import ABCMeta, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 from types import SimpleNamespace
 from typing import Any
 from .openapi import AqaraOpenAPI
@@ -166,7 +166,7 @@ class AqaraDevice(SimpleNamespace):
 class AqaraDeviceListener(metaclass=ABCMeta):
     """Aqara device listener."""
 
-    @abstractclassmethod
+    @abstractmethod
     def update_device(self, device: AqaraPoint):
         """Update device info.
 
@@ -175,7 +175,7 @@ class AqaraDeviceListener(metaclass=ABCMeta):
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def add_device(self, device: AqaraPoint):
         """Device Added.
 
@@ -184,7 +184,7 @@ class AqaraDeviceListener(metaclass=ABCMeta):
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def remove_device(self, device_id: str):
         """Device removed.
 
